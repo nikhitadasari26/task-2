@@ -23,23 +23,23 @@ fi
 
 sleep 1
 
-# Ensure PYTHONPATH is defined and includes /app
+# Ensure PYTHONPATH contains /app
 PYTHONPATH="${PYTHONPATH:-}"
 export PYTHONPATH="/app${PYTHONPATH:+:}${PYTHONPATH}"
 
-# Force start uvicorn (preferred). If uvicorn not installed, fall back.
+# Force start uvicorn pointing to app.main:app (explicit module)
 if python -c "import importlib.util,sys; sys.exit(0 if importlib.util.find_spec('uvicorn') else 1)"; then
-  echo "Starting uvicorn app:app"
-  exec python -u -m uvicorn app:app --host 0.0.0.0 --port 8080
+  echo "Starting uvicorn app.main:app"
+  exec python -u -m uvicorn app.main:app --host 0.0.0.0 --port 8080
 fi
 
-# If uvicorn missing, try module-style (app.main) which may start a server
+# fallback to module-style (if uvicorn missing)
 if python -c "import importlib,sys; importlib.util.find_spec('app.main')" >/dev/null 2>&1; then
   echo "uvicorn missing — starting python module: app.main"
   exec python -u -m app.main
 fi
 
-# Fallback to file candidates
+# fallback file candidates
 CANDIDATES=("/app.py" "/app/app.py" "/app/app/app.py" "/app/main.py" "/app/app/main.py")
 for c in "${CANDIDATES[@]}"; do
   if [ -f "$c" ]; then
