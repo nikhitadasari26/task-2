@@ -1,6 +1,4 @@
-﻿version: "3.8"
-
-services:
+﻿services:
   app:
     build:
       context: .
@@ -8,15 +6,14 @@ services:
     container_name: pki-2fa-app
     ports:
       - "8080:8080"
-    environment:
-      - TZ=UTC
     volumes:
       - seed-data:/data
       - cron-output:/cron
-      - ./cron:/app/cron:ro
       - ./student_private.pem:/app/student_private.pem:ro
       - ./student_public.pem:/app/student_public.pem:ro
       - ./instructor_public.pem:/app/instructor_public.pem:ro
+    environment:
+      - TZ=UTC
     restart: unless-stopped
 
 volumes:
