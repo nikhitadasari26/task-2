@@ -46,3 +46,27 @@ async def decrypt_seed_endpoint(req: DecryptRequest):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+# TOTP endpoints (added)
+from app.totp_utils import generate_totp_code, verify_totp_code
+import time
+class VerifyRequest(BaseModel):
+    code: str
+
+@app.get("/generate-2fa")
+async def generate_2fa():
+    if not SEED_PATH.exists():
+        raise HTTPException(status_code=500, detail="Seed not decrypted yet")
+    hex_seed = SEED_PATH.read_text().strip()
+    code = generate_totp_code(hex_seed)
+    valid_for = 30 - (int(time.time()) % 30)
+    return {"code": code, "valid_for": valid_for}
+
+@app.post("/verify-2fa")
+async def verify_2fa(req: VerifyRequest):
+    if not req.code:
+        raise HTTPException(status_code=400, detail="Missing code")
+    if not SEED_PATH.exists():
+        raise HTTPException(status_code=500, detail="Seed not decrypted yet")
+    hex_seed = SEED_PATH.read_text().strip()
+    valid = verify_totp_code(hex_seed, req.code, valid_window=1)
+    return {"valid": valid}
