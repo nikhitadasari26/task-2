@@ -1,4 +1,4 @@
-# app/main.py
+﻿# app/main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
@@ -8,7 +8,7 @@ import time
 # === LOCAL DEV NOTE ===
 # For local testing on Windows we use ./data so file appears in the repo.
 # BEFORE building Docker change DATA_DIR to Path("/data") or use env var.
-DATA_DIR = Path("./data")   # <--- use "./data" for local dev; change to "/data" for Docker
+DATA_DIR = Path("/data")   # <--- use "./data" for local dev; change to "/data" for Docker
 SEED_PATH = DATA_DIR / "seed.txt"
 
 app = FastAPI()
