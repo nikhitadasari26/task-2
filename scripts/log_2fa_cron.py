@@ -1,57 +1,54 @@
 #!/usr/bin/env python3
 # Cron script to log 2FA codes every minute
 
-from datetime import datetime, timezone
+from pathlib import Path
+import time
 import base64
-import os
+import datetime
 import sys
 
+# function to generate TOTP (uses pyotp)
 try:
     import pyotp
-except Exception as e:
-    print(f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} - ERROR: pyotp not installed: {e}")
+except Exception:
+    print("ERROR: pyotp not installed", file=sys.stderr)
     sys.exit(1)
 
-SEED_PATH = "/data/seed.txt"
+SEED_PATH = Path("/data/seed.txt")
+OUT_FMT = "%Y-%m-%d %H:%M:%S"
 
-def load_hex_seed(path):
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            hex_seed = f.read().strip()
-            if not hex_seed:
-                return None
-            return hex_seed
-    except FileNotFoundError:
+def load_hex_seed():
+    if not SEED_PATH.exists():
         return None
+    try:
+        s = SEED_PATH.read_text(encoding="utf-8").strip()
+        if not s:
+            return None
+        return s
     except Exception as e:
-        print(f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} - ERROR: failed to read seed: {e}")
+        print(f"ERROR reading seed: {e}", file=sys.stderr)
         return None
 
-def hex_to_base32(hex_string):
+def hex_to_base32(hex_seed):
     try:
-        b = bytes.fromhex(hex_string)
-    except Exception:
-        return None
-    return base64.b32encode(b).decode("utf-8")
-
-def generate_code(hex_seed):
-    base32 = hex_to_base32(hex_seed)
-    if base32 is None:
-        return None
-    totp = pyotp.TOTP(base32)
-    return totp.now()
+        b = bytes.fromhex(hex_seed)
+        return base64.b32encode(b).decode("utf-8")
+    except Exception as e:
+        raise
 
 def main():
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    hex_seed = load_hex_seed(SEED_PATH)
+    hex_seed = load_hex_seed()
+    now = datetime.datetime.utcnow().strftime(OUT_FMT)
     if not hex_seed:
         print(f"{now} - ERROR: seed not found")
         return
-    code = generate_code(hex_seed)
-    if not code:
-        print(f"{now} - ERROR: failed to generate code")
-        return
-    print(f"{now} - 2FA Code: {code}")
+    try:
+        b32 = hex_to_base32(hex_seed)
+        totp = pyotp.TOTP(b32)
+        code = totp.now()
+        print(f"{now} - 2FA Code: {code}")
+    except Exception as e:
+        print(f"{now} - ERROR generating code: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
