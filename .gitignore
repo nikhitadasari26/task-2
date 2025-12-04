@@ -1,5 +1,8 @@
 ﻿# Encrypted seed (sensitive)
 encrypted_seed.txt
+data/seed.txt
+generate_proof.py
+
 
 # Python cache
 __pycache__/
