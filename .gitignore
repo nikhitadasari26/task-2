@@ -14,3 +14,4 @@ __pycache__/
 # IDE files
 .vscode/
 .idea/
+data/seed.txt
