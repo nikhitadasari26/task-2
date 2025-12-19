@@ -3,7 +3,7 @@ import json, requests, subprocess, sys
 from pathlib import Path
 
 API = "https://eajeyq4r3zljoq4rpovy2nthda0vtjqf.lambda-url.ap-south-1.on.aws"
-STUDENT_ID = "23P31A0514"   # <- your roll number (corrected)
+STUDENT_ID = "23P31A0514"
 
 root = Path('.').resolve()
 
