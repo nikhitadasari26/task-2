@@ -39,3 +39,8 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 8080
 
 CMD ["/entrypoint.sh"]
+
+# Add this after copying the entrypoint
+RUN apt-get update && apt-get install -y dos2unix
+RUN dos2unix /entrypoint.sh
+RUN chmod +x /entrypoint.sh
